@@ -16,9 +16,14 @@ while [ $# -gt 0 ]; do
   esac
   shift
 done
-case "$config" in *'${'*) config=".claude/gates.json" ;; esac
+# Claude Code substitutes ${user_config.gates_config} in exec-form args (verified on 2.1.283).
+# A literal ${...} means this build does not, so fall back: the same value also arrives as an
+# environment variable, named after the option key in upper case.
+case "$config" in
+  *'${'*) config="${CLAUDE_PLUGIN_OPTION_GATES_CONFIG:-.claude/gates.json}" ;;
+esac
 
-enabled="${CLAUDE_PLUGIN_OPTION_GATES_ENABLED:-${CLAUDE_PLUGIN_OPTION_gates_enabled:-true}}"
+enabled="${CLAUDE_PLUGIN_OPTION_GATES_ENABLED:-true}"
 [ "$enabled" = "false" ] && exit 0
 
 input=$(cat)
@@ -56,7 +61,10 @@ done
 # Most turns are conversation, not code. The state file holds the commit at the last green run;
 # its mtime marks when that run finished, so an untouched tree costs nothing.
 state="${TMPDIR:-/tmp}/claude-gates-$(printf %s "$project" | shasum | cut -c1-12)"
-head=$(git -C "$project" rev-parse HEAD 2>/dev/null || echo no-git)
+# --verify --quiet prints nothing when there is no commit yet; plain rev-parse would
+# echo "HEAD" to stdout before failing, and that string would land in the state file.
+head=$(git -C "$project" rev-parse --verify --quiet HEAD 2>/dev/null) || head=""
+[ -n "$head" ] || head=no-git
 if [ -f "$state" ] && [ "$head" = "$(cat "$state" 2>/dev/null)" ]; then
   shopt -s nullglob globstar
   touched=false

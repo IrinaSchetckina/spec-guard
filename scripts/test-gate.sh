@@ -19,12 +19,14 @@ while [ $# -gt 0 ]; do
   esac
   shift
 done
-# A literal ${...} here means this Claude Code build does not substitute user config in hook
-# args; fall back to the documented default rather than looking for a file with that name.
-case "$config" in *'${'*) config=".claude/gates.json" ;; esac
+# Claude Code substitutes ${user_config.gates_config} in exec-form args (verified on 2.1.283).
+# A literal ${...} means this build does not, so fall back: the same value also arrives as an
+# environment variable, named after the option key in upper case.
+case "$config" in
+  *'${'*) config="${CLAUDE_PLUGIN_OPTION_GATES_CONFIG:-.claude/gates.json}" ;;
+esac
 
-# The option is exported to hook commands; the exact case of the suffix has varied, so accept both.
-enabled="${CLAUDE_PLUGIN_OPTION_GATES_ENABLED:-${CLAUDE_PLUGIN_OPTION_gates_enabled:-true}}"
+enabled="${CLAUDE_PLUGIN_OPTION_GATES_ENABLED:-true}"
 [ "$enabled" = "false" ] && exit 0
 
 input=$(cat)
