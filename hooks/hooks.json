@@ -1,0 +1,31 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/test-gate.sh",
+            "args": ["--config", "${user_config.gates_config}"],
+            "timeout": 180,
+            "statusMessage": "Running the gate for the edited area…"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/test-gate-stop.sh",
+            "args": ["--config", "${user_config.gates_config}"],
+            "timeout": 300,
+            "statusMessage": "Final gate: project tests…"
+          }
+        ]
+      }
+    ]
+  }
+}

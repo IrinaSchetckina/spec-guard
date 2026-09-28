@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "schetckina-plugins",
+  "description": "Plugins for spec-driven development: verification, review and quality gates.",
+  "owner": {
+    "name": "Iryna Schetckina",
+    "url": "https://github.com/IrinaSchetckina"
+  },
+  "plugins": [
+    {
+      "name": "spec-guard",
+      "source": ".",
+      "category": "quality",
+      "tags": ["testing", "review", "specifications", "hooks"]
+    }
+  ]
+}
