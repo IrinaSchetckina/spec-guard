@@ -48,7 +48,7 @@ The gates are off until the project defines them. Create `.claude/gates.json` in
     {
       "name": "full suite",
       "on": ["stop"],
-      "paths": ["src/**"],
+      "paths": ["src/*"],
       "command": "npm test"
     }
   ]
@@ -59,7 +59,7 @@ The gates are off until the project defines them. Create `.claude/gates.json` in
 | --- | --- | --- |
 | `name` | no | Shown when the gate fails. Defaults to `tests`. |
 | `on` | no | `edit`, `stop`, or both. Defaults to both. |
-| `paths` | for `edit` | Shell globs against project-relative paths. `*` crosses `/`, so `src/*/domain/*.ts` matches at any depth. Brace alternatives are **not** expanded — list them as separate entries. |
+| `paths` | for `edit` | Shell globs against project-relative paths, matched with bash pattern matching: `*` crosses `/`, so `src/*/domain/*.ts` matches at any depth and `src/*` matches the whole tree. Brace alternatives are **not** expanded — list them as separate entries. |
 | `command` | yes | Run from the project root through `bash -c`. |
 | `errorPattern` | no | Extended regex used to summarise the failure. Defaults to a pattern that catches failed tests, assertion messages and compiler errors. |
 

@@ -58,15 +58,22 @@ state="${TMPDIR:-/tmp}/claude-gates-$(printf %s "$project" | shasum | cut -c1-12
 head=$(git -C "$project" rev-parse --verify --quiet HEAD 2>/dev/null) || head=""
 [ -n "$head" ] || head=no-git
 if [ -f "$state" ] && [ "$head" = "$(cat "$state" 2>/dev/null)" ]; then
-  shopt -s nullglob globstar
+  # Look for a watched file newer than the last green run. The patterns are not expanded as
+  # globs: macOS ships bash 3.2, which has no globstar, so "**" there would silently stop
+  # crossing directories and the gate would skip a turn that did change code. Instead walk the
+  # fixed prefix of each pattern with find, and match with the same rules the edit gate uses.
   touched=false
   for pattern in "${patterns[@]}"; do
-    # shellcheck disable=SC2206  # the pattern is expanded as a glob on purpose
-    for f in $pattern; do
-      if [ -f "$f" ] && [ "$f" -nt "$state" ]; then touched=true; break 2; fi
-    done
+    prefix=${pattern%%[*?[]*}   # the part before the first wildcard
+    prefix=${prefix%/*}         # back up to a directory
+    [ -n "$prefix" ] || prefix="."
+    [ -d "$prefix" ] || continue
+    while IFS= read -r f; do
+      f=${f#./}
+      # shellcheck disable=SC2053  # the right-hand side is a glob on purpose
+      if [[ $f == $pattern ]]; then touched=true; break 2; fi
+    done < <(find "$prefix" -type f -newer "$state" 2>/dev/null)
   done
-  shopt -u nullglob globstar
   $touched || exit 0
 fi
 
