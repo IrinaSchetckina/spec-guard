@@ -14,10 +14,10 @@
 set -uo pipefail
 
 # SPEC_GUARD_GATES overrides the gate file, or turns the gates off entirely when set to "off".
-# Set it in the env block of your settings.json to silence the gates on one machine.
-# This is deliberately not a plugin userConfig option: Claude Code does not run a plugin's hooks
-# until every declared option has a stored value, so an option here would make a fresh install
-# silently do nothing.
+# It is an environment variable rather than a plugin userConfig option because env can be set in a
+# project's own .claude/settings.json, while plugin options are read from the user's settings only
+# (pluginConfigs is user or managed scope). A project can therefore point the gates at its own file
+# or disable them for everyone who clones it.
 gates="${SPEC_GUARD_GATES:-.claude/gates.json}"
 [ "$gates" = "off" ] && exit 0
 

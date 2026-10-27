@@ -81,12 +81,11 @@ in the `env` block of your `settings.json` — `"off"` disables them outright:
 { "env": { "SPEC_GUARD_GATES": "off" } }
 ```
 
-The plugin deliberately declares no `userConfig` options. Claude Code does not run a plugin's
-hooks until every declared option has a stored value, so an option here would make a fresh
-install silently do nothing even with `.claude/gates.json` in place. Plugin options are also
-stored per user rather than per repository — `pluginConfigs` is read from `~/.claude/settings.json`
-only — which is the other reason the gate definitions belong in the repository, where they are
-committed, reviewed and shared with everyone who clones.
+An environment variable rather than a plugin `userConfig` option, because `env` can be set in a
+project's own `.claude/settings.json`, while plugin options are read from the user's settings only
+(`pluginConfigs` is user or managed scope). A project can therefore point the gates at its own
+file, or disable them for everyone who clones it — and that same scoping is why the gate
+definitions themselves belong in the repository, where they are committed and reviewed.
 
 ## Using the agents
 
