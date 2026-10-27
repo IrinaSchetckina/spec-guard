@@ -74,15 +74,19 @@ How it behaves:
 - **Silent by default** — no `.claude/gates.json`, no gates. Installing this plugin never runs a
   build command you did not configure.
 
-Per-machine overrides live in `/config` under the plugin: `gates_enabled` turns the gates off
-without touching the repository, and `gates_config` points at a different file. Both reach the
-gate scripts twice over — substituted into the hook's `args`, and as the environment variables
-`CLAUDE_PLUGIN_OPTION_GATES_ENABLED` and `CLAUDE_PLUGIN_OPTION_GATES_CONFIG` — so the scripts
-work on builds that do not substitute user config in hook args.
+To point the gates at a different file, or silence them on one machine, set `SPEC_GUARD_GATES`
+in the `env` block of your `settings.json` — `"off"` disables them outright:
 
-Note that plugin options are stored per user, not per repository: `pluginConfigs` is read from
-`~/.claude/settings.json` only. That is why the gate definitions live in the repository instead —
-`.claude/gates.json` is committed, reviewed, and shared with everyone who clones.
+```json
+{ "env": { "SPEC_GUARD_GATES": "off" } }
+```
+
+The plugin deliberately declares no `userConfig` options. Claude Code does not run a plugin's
+hooks until every declared option has a stored value, so an option here would make a fresh
+install silently do nothing even with `.claude/gates.json` in place. Plugin options are also
+stored per user rather than per repository — `pluginConfigs` is read from `~/.claude/settings.json`
+only — which is the other reason the gate definitions belong in the repository, where they are
+committed, reviewed and shared with everyone who clones.
 
 ## Using the agents
 

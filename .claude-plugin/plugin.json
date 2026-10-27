@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin.json",
   "name": "spec-guard",
   "displayName": "Spec Guard",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Spec-driven verification harness: an independent spec verifier, single-axis code review, test-writing discipline, atomic commits, and project-defined test gates that run on edit and before a turn ends.",
   "author": {
     "name": "Iryna Schetckina",
@@ -11,19 +11,12 @@
   "homepage": "https://github.com/IrinaSchetckina/spec-guard",
   "repository": "https://github.com/IrinaSchetckina/spec-guard",
   "license": "MIT",
-  "keywords": ["testing", "code-review", "specifications", "hooks", "tdd", "quality-gates"],
-  "userConfig": {
-    "gates_enabled": {
-      "type": "boolean",
-      "title": "Run test gates",
-      "description": "Run the project's configured test gates after edits and before a turn ends. Turn this off to silence them on this machine.",
-      "default": true
-    },
-    "gates_config": {
-      "type": "string",
-      "title": "Gate config path",
-      "description": "Project-relative path to the gate definitions. The gates stay off while this file is absent.",
-      "default": ".claude/gates.json"
-    }
-  }
+  "keywords": [
+    "testing",
+    "code-review",
+    "specifications",
+    "hooks",
+    "tdd",
+    "quality-gates"
+  ]
 }

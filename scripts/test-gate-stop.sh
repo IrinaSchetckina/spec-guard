@@ -2,42 +2,34 @@
 # Stop gate: before Claude ends a turn, run the project's stop gates once — whatever tool made
 # the edits (Edit/Write, or Bash heredoc/sed/python, which the PostToolUse gate never sees).
 #
-# Gates are read from $CLAUDE_PROJECT_DIR/.claude/gates.json (or --config). No file, no gates.
+# Gates are read from $CLAUDE_PROJECT_DIR/.claude/gates.json, or the path in SPEC_GUARD_GATES.
+# No file, no gates.
 #
 # Loop guard: exit 2 keeps Claude working and hands it the failure. On the next stop
 # stop_hook_active is true; the gates run again, but a failure then only reaches the user as a
 # systemMessage and never blocks. So this hook blocks at most once per turn.
 set -uo pipefail
 
-config=".claude/gates.json"
-while [ $# -gt 0 ]; do
-  case "$1" in
-    --config) shift; [ $# -gt 0 ] && [ -n "$1" ] && config="$1" ;;
-  esac
-  shift
-done
-# Claude Code substitutes ${user_config.gates_config} in exec-form args (verified on 2.1.283).
-# A literal ${...} means this build does not, so fall back: the same value also arrives as an
-# environment variable, named after the option key in upper case.
-case "$config" in
-  *'${'*) config="${CLAUDE_PLUGIN_OPTION_GATES_CONFIG:-.claude/gates.json}" ;;
-esac
-
-enabled="${CLAUDE_PLUGIN_OPTION_GATES_ENABLED:-true}"
-[ "$enabled" = "false" ] && exit 0
+# SPEC_GUARD_GATES overrides the gate file, or turns the gates off entirely when set to "off".
+# Set it in the env block of your settings.json to silence the gates on one machine.
+# This is deliberately not a plugin userConfig option: Claude Code does not run a plugin's hooks
+# until every declared option has a stored value, so an option here would make a fresh install
+# silently do nothing.
+gates="${SPEC_GUARD_GATES:-.claude/gates.json}"
+[ "$gates" = "off" ] && exit 0
 
 input=$(cat)
 project="${CLAUDE_PROJECT_DIR:-$PWD}"
 cd "$project" || exit 0
-[ -f "$config" ] || exit 0
+[ -f "$gates" ] || exit 0
 command -v jq >/dev/null 2>&1 || exit 0
 
 active=$(jq -r '.stop_hook_active // false' <<<"$input" 2>/dev/null)
 
 count=$(jq 'if type == "object" and (.gates | type) == "array" then (.gates | length) else -1 end' \
-  "$config" 2>/dev/null) || count=-1
+  "$gates" 2>/dev/null) || count=-1
 if [ "${count:--1}" -lt 0 ]; then
-  jq -n --arg c "$config" \
+  jq -n --arg c "$gates" \
     '{systemMessage: ("Test gates are off: \($c) is not an object with a \"gates\" array.")}'
   exit 0
 fi
@@ -46,7 +38,7 @@ fi
 commands=(); names=(); errorPatterns=(); patterns=()
 i=0
 while [ "$i" -lt "$count" ]; do
-  gate=$(jq -c ".gates[$i]" "$config"); i=$((i + 1))
+  gate=$(jq -c ".gates[$i]" "$gates"); i=$((i + 1))
   jq -e '(.on // ["edit","stop"]) | index("stop")' >/dev/null 2>&1 <<<"$gate" || continue
   cmd=$(jq -r '.command // empty' <<<"$gate"); [ -n "$cmd" ] || continue
   commands+=("$cmd")
