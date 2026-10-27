@@ -7,6 +7,7 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/test-gate.sh",
+            "args": [],
             "timeout": 180,
             "statusMessage": "Running the gate for the edited area…"
           }
@@ -19,6 +20,7 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/test-gate-stop.sh",
+            "args": [],
             "timeout": 300,
             "statusMessage": "Final gate: project tests…"
           }

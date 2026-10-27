@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin.json",
   "name": "spec-guard",
   "displayName": "Spec Guard",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Spec-driven verification harness: an independent spec verifier, single-axis code review, test-writing discipline, atomic commits, and project-defined test gates that run on edit and before a turn ends.",
   "author": {
     "name": "Iryna Schetckina",
